@@ -26,27 +26,30 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
 
 
 def portscan(ip,machine,path):
-	print "\n[+] Going for port scan in background : \033[1;35;40mnmap -sV -sC -Pn -p- --max-retries=0 -oA {}/{}/nmap/scan {} >/dev/null &".format(path,machine,ip)
+	print "\n[+] Going for port scan in background"
 	subprocess.Popen(["mkdir","-p","{}/{}/nmap".format(path,machine)])
-	cmd = "/usr/bin/nmap -sV -sC -p- -Pn --max-retries=0 -oA {}/{}/nmap/scan {} >/dev/null &".format(path,machine,ip)
+	cmd = "/usr/bin/nmap -sV -sC -p- -Pn --max-retries=0 -oA {}/{}/nmap/tcp-scan {} >/dev/null &".format(path,machine,ip)
+	subprocess.call(cmd,shell=True)
+	cmd = "/usr/bin/nmap -sV -sC -p- -sU -Pn --max-retries=0 -oA {}/{}/nmap/udp-scan {} >/dev/null &".format(path,machine,ip)
 	subprocess.call(cmd,shell=True)
 
 def webscan(ip,machine,path):
 	print "\n\033[1;37;40m[+] Checking for web related stuff"
 	sleep(3)
 	#To save time just check 80,443 with curl and dig in
-	subprocess.Popen(["mkdir","{}/{}/web".format(path,machine)])
-	p = subprocess.Popen(["curl","http://{}".format(ip)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+	p = subprocess.Popen(["curl","--max-time","10","http://{}".format(ip)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 	stdout,stderr = p.communicate()
 	if stdout!="":
+		subprocess.Popen(["mkdir","{}/{}/web".format(path,machine)])
 		print "	\033[1;32;40m[*] Port 80 is up. Going in"
 		cmd = '''gobuster -np -fw -q -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -u http://{} -x php,asp,aspx,jsp,docx,txt,zip -t 10 -o {}/{}/web/go_http >/dev/null &'''.format(ip,path,machine)
 		subprocess.call(cmd,shell=True,stdout=None)
 	else:
 		print "	\033[1;31;40m[-] Port 80 is down. Checking SSL"
-	p = subprocess.Popen(["curl","-k","https://{}".format(ip)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+	p = subprocess.Popen(["curl","--max-time","10","-k","https://{}".format(ip)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 	stdout,stderr = p.communicate()
 	if stdout!="":
+		subprocess.Popen(["mkdir","{}/{}/web".format(path,machine)])
 		print "	\033[1;32;40m[*] Port 443 is up. Going in"
 		cmd = '''gobuster -k -fw -q -np -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -u https://{} -x php,asp,aspx,jsp,docx,txt,zip -t 10 -o {}/{}/web/go_https >/dev/null &'''.format(ip,path,machine)
 		subprocess.call(cmd,shell=True,stdout=None)
@@ -61,31 +64,40 @@ def smbscan(ip,machine,path):
 	if output.strip("\n") != "128" and output.strip("\n") != "32" and output.strip("\n")!= "127":
 		print "	\033[1;33;40m[-]It seems to be Linux. Double check if smb is open on Linux"
 	else:
-		creds = ['anonymous:anonymous','root:root','anonymous:""','root:""']
-		for cred in creds:
-			user,passwd = cred.split(":")
-			cmd = '''smbmap -u {} -p {} -H {}'''.format(user,passwd,ip)
-			p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
-			stdout,err = p.communicate()
-			if re.search(r'Authentication error',stdout):
-				print "	\033[1;31;40m[-] We don't have access to shares"
-			else:
-				print "	\033[1;32;40m[*] Found shares accessible using {}. Writing Results..".format(cred)
-				cmd = "mkdir {}/{}/smb".format(path,machine)
-				subprocess.Popen(cmd,shell=True)
-				sleep(3)
-				f = open("{}/{}/smb/scan-{}-{}".format(path,machine,user,passwd),"w")
-				f.write(stdout)
-				f.close()
+		print "	\033[1;32;40m[+] It's Windows Machine. Checking SMB Port"
+		s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+		s.settimeout(10)
+		status = s.connect_ex(('{}'.format(ip),445))
+		if status == 0:
+			print "		\033[1;32;40m[+] Port open. Checking shares"
+			s.close()
+			cmd = "mkdir {}/{}/smb".format(path,machine)
+			subprocess.Popen(cmd,shell=True)
+			creds = ['anonymous:anonymous','root:root','anonymous:""','root:""']
+			for cred in creds:
+				user,passwd = cred.split(":")
+				cmd = '''smbmap -u {} -p {} -H {}'''.format(user,passwd,ip)
+				p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+				stdout,err = p.communicate()
+				if re.search(r'Authentication error',stdout):
+					print "			\033[1;31;40m[-] We don't have access to shares with {}:{}".format(user,passwd)
+				else:
+					print "			\033[1;32;40m[*] Found shares accessible using {}. Writing Results..".format(cred)
+					f = open("{}/{}/smb/scan-{}-{}".format(path,machine,user,passwd),"w")
+					f.write(stdout)
+					f.close()
+		else:
+			print "		\033[1;31;40m[-] Port 445 is down. Giving up"
 
 def ftpscan(ip,machine,path):
 	sleep(4)
 	print "\n\033[1;37;40m[+] Checking if FTP is up"
 	s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+	s.settimeout(10)
 	status = s.connect_ex(('{}'.format(ip),21))
-	if status == "0":
+	if status == 0:
 		print "	\033[1;32;40m[*] Port 21 is open. Checking anonymous access"
-		sock.close()
+		s.close()
 		ftp = FTP('{}'.format(ip))
 		try:
 			ftp.login()
@@ -113,7 +125,7 @@ if __name__=="__main__":
 		ip = sys.argv[2]
 		machine = sys.argv[1]
 		#Modify this line to your need.
-		path = ""
+		path = "/root/Desktop/htb/"
 		if path == "":
 			print "\nPlease open the script and setup the path to store output"
 		else:
@@ -131,4 +143,4 @@ if __name__=="__main__":
 			t4.join()
 			#subprocess making terminal fuzzy. Reset it for normal use
 			subprocess.call(["stty","sane"])
-			print "\n\033[1;37;40m[*] Job Done. Check {} for results..".format("{}/".format(path) + machine)
+			print "\n\033[1;37;40m[*] Job Done. Check {} for results..".format("{}".format(path) + machine)
