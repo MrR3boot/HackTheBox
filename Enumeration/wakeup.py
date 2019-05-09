@@ -55,15 +55,16 @@ def webscan(ip,machine,path):
 
 def smbscan(ip,machine,path):
 	print "\n\033[1;37;40m[+] Checking if OS is Win/Linux"
-	cmd = """ping -c1 {} | grep ttl | cut -d '=' -f3 | cut -d ' ' -f1""".format(ip)
+	cmd = """ping -c5 {} | grep -m 1 ttl | cut -d '=' -f3 | cut -d ' ' -f1""".format(ip)
 	p = subprocess.Popen(cmd, stdout=subprocess.PIPE,shell=True)
 	output,err = p.communicate()
-	if output != "128" or output != "32":
+	if output.strip("\n") != "128" and output.strip("\n") != "32" and output.strip("\n")!= "127":
 		print "	\033[1;33;40m[-]It seems to be Linux. Double check if smb is open on Linux"
 	else:
-		creds = ['anonymous','root']
+		creds = ['anonymous:anonymous','root:root','anonymous:""','root:""']
 		for cred in creds:
-			cmd = '''smbmap -u {} -p {} -H {}'''.format(cred,cred,ip)
+			user,passwd = cred.split(":")
+			cmd = '''smbmap -u {} -p {} -H {}'''.format(user,passwd,ip)
 			p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
 			stdout,err = p.communicate()
 			if re.search(r'Authentication error',stdout):
@@ -73,7 +74,7 @@ def smbscan(ip,machine,path):
 				cmd = "mkdir {}/{}/smb".format(path,machine)
 				subprocess.Popen(cmd,shell=True)
 				sleep(3)
-				f = open("{}/{}/smb/scan".format(path,machine),"w")
+				f = open("{}/{}/smb/scan-{}-{}".format(path,machine,user,passwd),"w")
 				f.write(stdout)
 				f.close()
 
@@ -130,4 +131,4 @@ if __name__=="__main__":
 			t4.join()
 			#subprocess making terminal fuzzy. Reset it for normal use
 			subprocess.call(["stty","sane"])
-			print "\n\033[1;37;40m[*] Job Done. Check {} for results..".format("{}/"+machine)
+			print "\n\033[1;37;40m[*] Job Done. Check {} for results..".format("{}/".format(path) + machine)
