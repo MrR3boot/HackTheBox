@@ -125,7 +125,7 @@ if __name__=="__main__":
 		ip = sys.argv[2]
 		machine = sys.argv[1]
 		#Modify this line to your need.
-		path = "/root/Desktop/htb/"
+		path = ""
 		if path == "":
 			print "\nPlease open the script and setup the path to store output"
 		else:
