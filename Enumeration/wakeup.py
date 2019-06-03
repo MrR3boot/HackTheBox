@@ -42,7 +42,7 @@ def webscan(ip,machine,path):
 	if stdout!="":
 		subprocess.Popen(["mkdir","{}/{}/web".format(path,machine)])
 		print "	\033[1;32;40m[*] Port 80 is up. Going in"
-		cmd = '''gobuster -np -fw -q -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -u http://{} -x php,asp,aspx,jsp,docx,txt,zip -t 10 -o {}/{}/web/go_http >/dev/null &'''.format(ip,path,machine)
+		cmd = '''gobuster -s 200,207,301,302,400,401,403,500 -np -fw -q -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -u http://{} -x php,asp,aspx,jsp,docx,txt,zip -t 10 -o {}/{}/web/go_http >/dev/null &'''.format(ip,path,machine)
 		subprocess.call(cmd,shell=True,stdout=None)
 	else:
 		print "	\033[1;31;40m[-] Port 80 is down. Checking SSL"
@@ -51,7 +51,7 @@ def webscan(ip,machine,path):
 	if stdout!="":
 		subprocess.Popen(["mkdir","{}/{}/web".format(path,machine)])
 		print "	\033[1;32;40m[*] Port 443 is up. Going in"
-		cmd = '''gobuster -k -fw -q -np -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -u https://{} -x php,asp,aspx,jsp,docx,txt,zip -t 10 -o {}/{}/web/go_https >/dev/null &'''.format(ip,path,machine)
+		cmd = '''gobuster -s 200,207,301,302,400,401,403,500 -k -fw -q -np -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -u https://{} -x php,asp,aspx,jsp,docx,txt,zip -t 10 -o {}/{}/web/go_https >/dev/null &'''.format(ip,path,machine)
 		subprocess.call(cmd,shell=True,stdout=None)
 	else:
 		print "	\033[1;31;40m[-] Port 443 is down. Giving up"
