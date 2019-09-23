@@ -26,3 +26,9 @@ A very hard and awesome machine which involves several cryptography concepts whe
 2. It seems that there is signature validation against the expression that is being evaluated. But the problem is when we generate seeds they do repeat after several iterations which seems to be an issue. So i've generated seeds and kept it on file using [seed.py](https://github.com/MrR3boot/HackTheBox/blob/master/Boxes/Kryptos/seed.py).
 3. Crafted a script to create signatures using generated seeds and bruteforce the server with sample expression ``3+3`` [root-exploit.py](https://github.com/MrR3boot/HackTheBox/blob/master/Boxes/Kryptos/root-exploit.py)
 4. After several iterations i do see success message with evaluated expression. Then using known python sandbox bypasses i've crafted a working payload to read root.txt
+
+## References:
+1. https://crypto.stackexchange.com/questions/45021/rc4-finding-key-if-we-know-plain-text-and-ciphertext
+2. https://dgl.cx/2014/10/vim-blowfish
+3. https://romailler.ch/2017/11/17/ynot17-sms/
+4. https://wapiflapi.github.io/2013/04/22/plaidctf-pyjail-story-of-pythons-escape/
