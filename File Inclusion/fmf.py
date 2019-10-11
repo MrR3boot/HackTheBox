@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import sys
 import random
 import requests
@@ -45,7 +44,10 @@ if __name__=="__main__":
 		print '\033[1;37;40m[-] Checking if URL is stable'
 		cookies = sys.argv[2].split('=')
 		cookies = dict(zip(cookies[0],cookies[1]))
-		r = requests.get(sys.argv[1],cookies=cookies)
-		print '[+] URL is \033[1;32;40mOnline\033[1;37;40m'
-		for line in content:
-			lfi(sys.argv[1],line.strip(),r.headers['Content-Length'],cookies,r.text)
+		try:
+			r = requests.get(sys.argv[1],cookies=cookies)
+			print '[+] URL is \033[1;32;40mOnline\033[1;37;40m'
+			for line in content:
+				lfi(sys.argv[1],line.strip(),r.headers['Content-Length'],cookies,r.text)
+		except:
+			print '[-] URL is \033[1;31;40mOffline'
