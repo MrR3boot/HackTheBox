@@ -31,4 +31,4 @@ A very hard and awesome machine which involves several cryptography concepts whe
 1. https://crypto.stackexchange.com/questions/45021/rc4-finding-key-if-we-know-plain-text-and-ciphertext
 2. https://dgl.cx/2014/10/vim-blowfish
 3. https://romailler.ch/2017/11/17/ynot17-sms/
-4. https://wapiflapi.github.io/2013/04/22/plaidctf-pyjail-story-of-pythons-escape/
+4. https://wapiflapi.github.io/2013/04/22/plaidctf-pyjail-story-of-pythons-escape
