@@ -1,5 +1,5 @@
-Burn The Box and Invite Them All:
----------------------------------
+Don't Just Think Outside The Box. Burn The Box and Invite Everyone to The Party :)
+-----------------------------------------------------------------------------------
 
 I'll keep it short and place concepts, scripts, techniques Used in Solving the Boxes.
 
