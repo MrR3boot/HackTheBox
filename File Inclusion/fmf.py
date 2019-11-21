@@ -19,7 +19,7 @@ def banner():
 def lfi(url,payload,length,cookies,response):
 	url = url+payload
 	int = random.randint(0,10000000)
-	r = requests.get(url,headers={'User-Agent':'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101{} Firefox/60.0'.format(int)})
+	r = requests.get(url,cookies=cookies,headers={'User-Agent':'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101{} Firefox/60.0'.format(int)})
 	if r.headers['Content-Length']!=length:
 		maxlen=len(r.text) if len(response)<len(r.text) else len(response)
 		result=''
