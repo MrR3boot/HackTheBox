@@ -43,7 +43,7 @@ if __name__=="__main__":
 		content = open(sys.argv[3]).readlines()
 		print '\033[1;37;40m[-] Checking if URL is stable'
 		cookies = sys.argv[2].split('=')
-		cookies = dict(zip(cookies[0],cookies[1]))
+		cookies = {cookies[0]:cookies[1]}
 		try:
 			r = requests.get(sys.argv[1],cookies=cookies)
 			print '[+] URL is \033[1;32;40mOnline\033[1;37;40m'
